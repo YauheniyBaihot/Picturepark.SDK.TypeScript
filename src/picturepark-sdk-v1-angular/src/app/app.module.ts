@@ -42,6 +42,7 @@ export function PictureparkConfigurationFactory() {
   }
 }
 
+// TODO: auto-fill value is not supported by IE (was fixed in autoprefixer 8.6.5, currently angular cli not using it.)
 @NgModule({
   entryComponents: [DetailsDialogComponent],
   declarations: [

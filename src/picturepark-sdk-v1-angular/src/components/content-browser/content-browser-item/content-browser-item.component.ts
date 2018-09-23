@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
-import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { DomSanitizer, SafeUrl, SafeHtml } from '@angular/platform-browser';
 
 import { BasketService } from './../../../services/basket.service';
 import { ContentService, ThumbnailSize, ContentDownloadLinkCreateRequest } from '../../../services/services';
@@ -30,12 +30,23 @@ export class ContentBrowserItemComponent implements OnChanges {
 
   public thumbnailUrl: SafeUrl | null = null;
 
+  public virtualItemHtml: SafeHtml | null = null;
+
+  private nonVirtualContentSchemasIds = ['AudioMetadata', 'DocumentMetadata', 'FileMetadata', 'ImageMetadata', 'VideoMetadata'];
+
   constructor(private basketService: BasketService, private contentService: ContentService, private sanitizer: DomSanitizer) {
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
-    if (changes['thumbnailSize']) {
+    if (changes['itemModel'] && changes['itemModel'].firstChange) {
+      if (this.itemModel.item.contentSchemaId && this.nonVirtualContentSchemasIds.indexOf(this.itemModel.item.contentSchemaId) === -1) {
+        if (this.itemModel.item.displayValues && this.itemModel.item.displayValues['thumbnail']) {
+          this.virtualItemHtml = this.sanitizer.bypassSecurityTrustHtml(this.itemModel.item.displayValues['thumbnail'])
+        }
+      }
+    }
 
+    if (changes['thumbnailSize'] && this.virtualItemHtml === null) {
       const updateImage =
         (changes['thumbnailSize'].firstChange) ||
         (changes['thumbnailSize'].previousValue === ThumbnailSize.Small && this.isListView === false) ||
